@@ -72,13 +72,14 @@
             min-height: 100vh;
             touch-action: manipulation;
             transition: all 0.3s ease;
+            padding-bottom: 120px;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            min-height: 100vh;
+            min-height: calc(100vh - 120px);
         }
 
         .header {
@@ -312,6 +313,143 @@
             color: var(--primary-color);
         }
 
+        /* Enhanced Icon Picker Styles */
+        .icon-picker-container {
+            position: relative;
+        }
+
+        .icon-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .icon-preview {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--card-background);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .icon-preview:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .icon-dropdown-btn {
+            flex: 1;
+            padding: 12px 15px;
+            background: var(--card-background);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .icon-dropdown-btn:hover {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .icon-dropdown-btn.active {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .dropdown-arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-arrow.rotated {
+            transform: rotate(180deg);
+        }
+
+        .icon-scroll-container {
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--card-background);
+            margin-top: 5px;
+            box-shadow: var(--shadow);
+        }
+
+        .icon-scroll-container.active {
+            display: block;
+        }
+
+        .icon-scroll-list {
+            padding: 10px;
+        }
+
+        .icon-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-bottom: 5px;
+        }
+
+        .icon-option:hover {
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .icon-option.selected {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .icon-option-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-right: 12px;
+            border-radius: 6px;
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .icon-option.selected .icon-option-icon {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .icon-option-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .no-icon-option {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .no-icon-option:hover {
+            background: var(--text-secondary);
+        }
+
+        .no-icon-option .icon-option-icon {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         .summary-card {
             background: var(--card-background);
             border-radius: 15px;
@@ -437,7 +575,7 @@
             background: var(--card-background);
             border-radius: 15px;
             padding: 20px;
-            margin: 20px 0;
+            margin: 20px 0 40px 0;
             box-shadow: var(--shadow);
             border-left: 4px solid var(--success-color);
         }
@@ -655,7 +793,7 @@
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
-                padding-bottom: 100px;
+                padding-bottom: 120px;
             }
 
             .app-title h1 {
@@ -677,6 +815,15 @@
             .stat-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            .icon-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .icon-preview {
+                align-self: center;
+            }
         }
 
         @media print {
@@ -687,6 +834,7 @@
             body {
                 background: white !important;
                 color: black !important;
+                padding-bottom: 0 !important;
             }
 
             .container {
@@ -694,10 +842,18 @@
                 padding: 0;
             }
 
-            .expense-card, .summary-card, .privacy-notice {
+            .expense-card, .summary-card, .privacy-notice, .filter-section, .stat-card, .chart-container {
                 box-shadow: none !important;
                 border: 1px solid #ccc;
                 break-inside: avoid;
+            }
+
+            .section {
+                display: block !important;
+            }
+
+            .section:not(.active) {
+                display: none !important;
             }
         }
     </style>
@@ -1141,7 +1297,145 @@
                 </div>
                 <div class="input-group">
                     <label for="custom-category-icon">Icon:</label>
-                    <input type="text" id="custom-category-icon" placeholder="e.g., ⛽" maxlength="2">
+                    <div class="icon-picker-container">
+                        <div class="icon-selector">
+                            <div class="icon-preview" id="custom-icon-preview">
+                                <span id="selected-icon">📦</span>
+                            </div>
+                            <button type="button" class="icon-dropdown-btn" id="icon-dropdown-btn" onclick="toggleIconDropdown()">
+                                <span id="dropdown-text">Click to choose an icon</span>
+                                <span class="dropdown-arrow" id="dropdown-arrow">▼</span>
+                            </button>
+                        </div>
+                        <div class="icon-scroll-container" id="icon-scroll-container">
+                            <div class="icon-scroll-list">
+                                <div class="icon-option no-icon-option" onclick="selectIcon('', 'No Icon')">
+                                    <div class="icon-option-icon">🚫</div>
+                                    <div class="icon-option-text">No Icon</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('⛽', 'Fuel')">
+                                    <div class="icon-option-icon">⛽</div>
+                                    <div class="icon-option-text">Fuel</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🔧', 'Maintenance')">
+                                    <div class="icon-option-icon">🔧</div>
+                                    <div class="icon-option-text">Maintenance</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🚚', 'Truck')">
+                                    <div class="icon-option-icon">🚚</div>
+                                    <div class="icon-option-text">Truck</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🛡️', 'Insurance')">
+                                    <div class="icon-option-icon">🛡️</div>
+                                    <div class="icon-option-text">Insurance</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('📜', 'Documents')">
+                                    <div class="icon-option-icon">📜</div>
+                                    <div class="icon-option-text">Documents</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🛣️', 'Roads')">
+                                    <div class="icon-option-icon">🛣️</div>
+                                    <div class="icon-option-text">Roads</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🛏️', 'Lodging')">
+                                    <div class="icon-option-icon">🛏️</div>
+                                    <div class="icon-option-text">Lodging</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🍽️', 'Meals')">
+                                    <div class="icon-option-icon">🍽️</div>
+                                    <div class="icon-option-text">Meals</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('📱', 'Technology')">
+                                    <div class="icon-option-icon">📱</div>
+                                    <div class="icon-option-text">Technology</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('📝', 'Office')">
+                                    <div class="icon-option-icon">📝</div>
+                                    <div class="icon-option-text">Office</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🧰', 'Tools')">
+                                    <div class="icon-option-icon">🧰</div>
+                                    <div class="icon-option-text">Tools</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🤝', 'Association')">
+                                    <div class="icon-option-icon">🤝</div>
+                                    <div class="icon-option-text">Association</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('💸', 'Taxes')">
+                                    <div class="icon-option-icon">💸</div>
+                                    <div class="icon-option-text">Taxes</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🩺', 'Medical')">
+                                    <div class="icon-option-icon">🩺</div>
+                                    <div class="icon-option-text">Medical</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('📦', 'Package')">
+                                    <div class="icon-option-icon">📦</div>
+                                    <div class="icon-option-text">Package</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('💰', 'Money')">
+                                    <div class="icon-option-icon">💰</div>
+                                    <div class="icon-option-text">Money</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🔋', 'Battery')">
+                                    <div class="icon-option-icon">🔋</div>
+                                    <div class="icon-option-text">Battery</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🛠️', 'Repair')">
+                                    <div class="icon-option-icon">🛠️</div>
+                                    <div class="icon-option-text">Repair</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('📊', 'Chart')">
+                                    <div class="icon-option-icon">📊</div>
+                                    <div class="icon-option-text">Chart</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('💳', 'Card')">
+                                    <div class="icon-option-icon">💳</div>
+                                    <div class="icon-option-text">Card</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🏪', 'Store')">
+                                    <div class="icon-option-icon">🏪</div>
+                                    <div class="icon-option-text">Store</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🎯', 'Target')">
+                                    <div class="icon-option-icon">🎯</div>
+                                    <div class="icon-option-text">Target</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('⚡', 'Electric')">
+                                    <div class="icon-option-icon">⚡</div>
+                                    <div class="icon-option-text">Electric</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🔌', 'Power')">
+                                    <div class="icon-option-icon">🔌</div>
+                                    <div class="icon-option-text">Power</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🛒', 'Shopping')">
+                                    <div class="icon-option-icon">🛒</div>
+                                    <div class="icon-option-text">Shopping</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('💡', 'Idea')">
+                                    <div class="icon-option-icon">💡</div>
+                                    <div class="icon-option-text">Idea</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🎨', 'Art')">
+                                    <div class="icon-option-icon">🎨</div>
+                                    <div class="icon-option-text">Art</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('🔍', 'Search')">
+                                    <div class="icon-option-icon">🔍</div>
+                                    <div class="icon-option-text">Search</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('📈', 'Growth')">
+                                    <div class="icon-option-icon">📈</div>
+                                    <div class="icon-option-text">Growth</div>
+                                </div>
+                                <div class="icon-option" onclick="selectIcon('📉', 'Decline')">
+                                    <div class="icon-option-icon">📉</div>
+                                    <div class="icon-option-text">Decline</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="input-group">
                     <label for="custom-category-cost-type">Default Cost Type:</label>
@@ -1172,10 +1466,10 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <button class="action-btn export-btn" onclick="exportToPDF()">
+                <button class="action-btn export-btn" onclick="exportToPDF('today')">
                     📄 Export PDF
                 </button>
-                <button class="action-btn print-btn" onclick="window.print()">
+                <button class="action-btn print-btn" onclick="printSection('today')">
                     🖨️ Print
                 </button>
                 <button class="action-btn feedback-btn" onclick="showFeedback()">
@@ -1208,6 +1502,16 @@
             </div>
 
             <div id="history-list"></div>
+
+            <!-- Action Buttons for History -->
+            <div class="action-buttons">
+                <button class="action-btn export-btn" onclick="exportToPDF('history')">
+                    📄 Export PDF
+                </button>
+                <button class="action-btn print-btn" onclick="printSection('history')">
+                    🖨️ Print
+                </button>
+            </div>
 
             <div class="error-message" id="history-error-message"></div>
         </div>
@@ -1248,6 +1552,16 @@
             <div class="chart-container">
                 <h3>📊 Expense Breakdown</h3>
                 <canvas id="expense-chart" aria-label="Expense breakdown chart"></canvas>
+            </div>
+
+            <!-- Action Buttons for Insights -->
+            <div class="action-buttons">
+                <button class="action-btn export-btn" onclick="exportToPDF('insights')">
+                    📄 Export PDF
+                </button>
+                <button class="action-btn print-btn" onclick="printSection('insights')">
+                    🖨️ Print
+                </button>
             </div>
 
             <div class="error-message" id="insights-error-message"></div>
@@ -1316,6 +1630,8 @@
         let allExpenses = JSON.parse(localStorage.getItem('allExpenses')) || [];
         let customCategories = JSON.parse(localStorage.getItem('customCategories')) || [];
         let editingExpenseId = null;
+        let selectedCustomIcon = '📦';
+        let selectedIconText = 'Package';
 
         const expenseCategories = [
             { id: 'fuel', name: 'Fuel', icon: '⛽', hasExtra: 'gallons' },
@@ -1355,6 +1671,59 @@
             themeIcon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
         }
 
+        // Enhanced Icon picker functions
+        function toggleIconDropdown() {
+            const container = document.getElementById('icon-scroll-container');
+            const btn = document.getElementById('icon-dropdown-btn');
+            const arrow = document.getElementById('dropdown-arrow');
+            
+            const isActive = container.classList.contains('active');
+            
+            if (isActive) {
+                container.classList.remove('active');
+                btn.classList.remove('active');
+                arrow.classList.remove('rotated');
+            } else {
+                container.classList.add('active');
+                btn.classList.add('active');
+                arrow.classList.add('rotated');
+            }
+        }
+
+        function selectIcon(icon, text) {
+            selectedCustomIcon = icon;
+            selectedIconText = text;
+            
+            const preview = document.getElementById('selected-icon');
+            const dropdownText = document.getElementById('dropdown-text');
+            
+            if (icon === '') {
+                preview.textContent = '🚫';
+                dropdownText.textContent = 'No Icon';
+            } else {
+                preview.textContent = icon;
+                dropdownText.textContent = text;
+            }
+            
+            // Update selected state in dropdown
+            document.querySelectorAll('.icon-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Find and highlight the selected option
+            const selectedOption = Array.from(document.querySelectorAll('.icon-option')).find(option => {
+                const optionIcon = option.getAttribute('onclick').match(/'([^']*)'/)[1];
+                return optionIcon === icon;
+            });
+            
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+            }
+            
+            // Close dropdown
+            toggleIconDropdown();
+        }
+
         // Initialize app
         function initializeApp() {
             initializeTheme();
@@ -1386,6 +1755,17 @@
                         }
                     }
                 });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const container = document.getElementById('icon-scroll-container');
+                const btn = document.getElementById('icon-dropdown-btn');
+                const iconPicker = document.querySelector('.icon-picker-container');
+                
+                if (!iconPicker.contains(event.target) && container.classList.contains('active')) {
+                    toggleIconDropdown();
+                }
             });
         }
 
@@ -1495,18 +1875,18 @@
         // Custom categories
         function addCustomCategory() {
             const name = document.getElementById('custom-category-name').value.trim();
-            const icon = document.getElementById('custom-category-icon').value.trim();
+            const icon = selectedCustomIcon;
             const costType = document.getElementById('custom-category-cost-type').value;
 
-            if (!name || !icon) {
-                showError('Please enter both category name and icon');
+            if (!name) {
+                showError('Please enter a category name');
                 return;
             }
 
             const newCategory = {
                 id: `custom-${Date.now()}`,
                 name,
-                icon,
+                icon: icon || '',
                 defaultCostType: costType
             };
 
@@ -1514,7 +1894,10 @@
             localStorage.setItem('customCategories', JSON.stringify(customCategories));
             
             document.getElementById('custom-category-name').value = '';
-            document.getElementById('custom-category-icon').value = '';
+            selectedCustomIcon = '📦';
+            selectedIconText = 'Package';
+            document.getElementById('selected-icon').textContent = '📦';
+            document.getElementById('dropdown-text').textContent = 'Click to choose an icon';
             
             renderCustomCategory(newCategory);
             showSuccess('Custom category added successfully!');
@@ -1528,10 +1911,11 @@
 
         function renderCustomCategory(category) {
             const container = document.getElementById('custom-categories-container');
+            const iconDisplay = category.icon ? category.icon : '📦';
             const categoryHtml = `
                 <div class="expense-card" data-category="${category.id}">
                     <div class="expense-header">
-                        <div class="expense-icon">${category.icon}</div>
+                        <div class="expense-icon">${iconDisplay}</div>
                         <div class="expense-title">${category.name}</div>
                     </div>
                     <div class="expense-content">
@@ -1867,21 +2251,56 @@
             });
         }
 
-        // Export functions
-        function exportToPDF() {
-            // Simple PDF export using window.print with print styles
+        // Enhanced Export and Print functions
+        function exportToPDF(section) {
             const originalTitle = document.title;
-            document.title = `Expense Report - ${new Date().toLocaleDateString()}`;
+            let sectionTitle = '';
+            
+            switch(section) {
+                case 'today':
+                    sectionTitle = 'Today\'s Expenses';
+                    break;
+                case 'history':
+                    sectionTitle = 'Expense History';
+                    break;
+                case 'insights':
+                    sectionTitle = 'Expense Insights';
+                    break;
+            }
+            
+            document.title = `${sectionTitle} Report - ${new Date().toLocaleDateString()}`;
             
             // Hide non-essential elements
             const elementsToHide = document.querySelectorAll('.navigation, .action-buttons, .theme-toggle');
             elementsToHide.forEach(el => el.style.display = 'none');
             
+            // Show only the current section
+            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+            document.getElementById(`${section === 'today' ? 'main' : section}-app`).style.display = 'block';
+            
             window.print();
             
             // Restore elements
             elementsToHide.forEach(el => el.style.display = '');
+            document.querySelectorAll('.section').forEach(sec => sec.style.display = '');
             document.title = originalTitle;
+            
+            // Restore active section
+            showCurrentSection();
+        }
+
+        function printSection(section) {
+            exportToPDF(section);
+        }
+
+        function showCurrentSection() {
+            const activeNav = document.querySelector('.nav-btn.active');
+            if (activeNav) {
+                const onclick = activeNav.getAttribute('onclick');
+                if (onclick) {
+                    eval(onclick);
+                }
+            }
         }
 
         // Edit and delete functions
